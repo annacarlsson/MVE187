@@ -41,6 +41,7 @@ density_1 <- dnorm(thetas, means[1], stds[1], log = FALSE)
 density_2 <- dnorm(thetas, means[2], stds[2], log = FALSE)
 density_3 <- dnorm(thetas, means[3], stds[3], log = FALSE)
 
+# Plot densities
 ggplot() +
   geom_line(
     aes(x = thetas, y = mixture_density), colour = palette[3], size = 1, show.legend = FALSE) + 
@@ -74,6 +75,7 @@ prior_density_1 <- dnorm(x, means[1], stds[1], log = FALSE)
 prior_density_2 <- dnorm(x, means[2], stds[2], log = FALSE)
 prior_density_3 <- dnorm(x, means[3], stds[3], log = FALSE)
 
+# Plot densities
 ggplot() +
   geom_line(
     aes(x = x, y = mixture_prior_density), colour = palette[3], size = 1, show.legend = FALSE) + 
@@ -93,3 +95,56 @@ ggplot() +
     axis.text = element_text(size = 10),
     legend.position = c(0.85, 0.8),
     legend.background = element_rect(fill=alpha('white', 0.9)))
+
+##### C) Posterior of theta
+
+# Define function for posterior
+posterior_theta <- function(thetas, x, sigma, sigmas_mix, means, weights){
+  predictive_prior_stds <- sqrt(sigmas_mix^2+sigma^2)
+  
+  likelihood <- dnorm(x, mean = thetas, sd = sigma, log = FALSE)
+  prior <- normal_mixture_density(thetas, means, sigmas_mix, weights)
+  predictive_prior <- normal_mixture_density(x, means, predictive_prior_stds, weights)
+  
+  posterior <- likelihood * prior / predictive_prior
+  return(posterior)
+}
+
+# Define parameters
+thetas <- seq(1.51, 1.53, length=1000)
+x <- 1.52083
+sigma <- 0.001
+sigmas <- c(0.001, 0.001, 0.005)
+means <- c(1.5163, 1.5197, 1.5203)
+weights <- c(0.33, 0.57, 0.10)
+
+# Compute densities (also, the component densities for comparison as functions of theta)
+posterior <- posterior_theta(thetas, x, sigma, sigmas, means, weights)
+likelihood <- dnorm(x, thetas, sigma)
+prior <- normal_mixture_density(thetas, means, sigmas, weights)
+predictive_prior <- normal_mixture_density(x, means, sqrt(sigmas^2+sigma^2), weights)
+
+ggplot() +
+  geom_line(
+    aes(x = thetas, y = posterior, colour = "Posterior"), size = 1, show.legend = TRUE) +
+  geom_line(
+    aes(x = thetas, y = likelihood, colour = "Likelihood"), size = 1, alpha = 0.25, show.legend = TRUE) +
+  geom_line(
+    aes(x = thetas, y = prior, colour = "Prior"), size = 1, alpha = 0.25, show.legend = TRUE) +
+  geom_line(
+    aes(x = thetas, y = predictive_prior, colour = "Predictive prior"), size = 1, alpha = 0.25, show.legend = TRUE) +
+  labs(title = "Posterior distribution of theta given x = 1.52083",
+       x = "Theta",
+       y = "Density") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8))) + 
+  #scale_colour_manual(values = palette[c(1,2,3,4)], labels = c('With correlated','Without correlated', '', ''), guide = 'legend',name='Variables')
+  scale_colour_manual("", 
+                      breaks = c("Posterior", "Likelihood", "Prior", "Predictive prior"),
+                      values = c("Posterior"=palette[3], "Likelihood"=palette[1], 
+                               "Prior"=palette[2], "Predictive prior"=palette[4]))
+
