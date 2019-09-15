@@ -9,6 +9,7 @@ setwd("/Users/anna/Dokument/GitHub/MVE187/Assignments/Assignment_1")
 library(ggplot2)
 library(gplots)
 library(ggpubr)
+library(bayestestR)
 
 palette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -146,4 +147,35 @@ ggplot() +
                       breaks = c("Posterior", "Likelihood", "Prior", "Predictive prior"),
                       values = c("Posterior"=palette[3], "Likelihood"=palette[1], 
                                "Prior"=palette[2], "Predictive prior"=palette[4]))
+
+# Estimate credibility intervals for theta
+cum_post <- cumsum(posterior) / sum(posterior)
+lower_ci <- thetas[which(cum_post>= 0.025)[1]]   
+upper_ci <- thetas[which(cum_post >= 0.975)[1]-1] 
+
+# Plot with interval marked
+df <- data.frame(thetas, posterior)
+
+ggplot() +
+  geom_area(data = subset(df, thetas < lower_ci), aes(x = thetas, y = posterior), fill = palette[2], alpha = 0.5) +
+  geom_area(data = subset(df, thetas > upper_ci), aes(x = thetas, y = posterior), fill = palette[2], alpha = 0.5) +
+  geom_line(
+    aes(x = thetas, y = posterior, colour = "Posterior"), size = 1, show.legend = FALSE) +
+  labs(title = "Posterior distribution of theta given x = 1.52083 with 95% centered CI",
+       x = "Theta",
+       y = "Density") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8))) +
+  coord_cartesian(xlim = c(1.517, 1.5235)) +
+  scale_colour_manual("", 
+                      breaks = c("Posterior", "Likelihood", "Prior", "Predictive prior"),
+                      values = c("Posterior"=palette[3], "Likelihood"=palette[1], 
+                                "Prior"=palette[2], "Predictive prior"=palette[4]))
+
+#### D) Posterior predictive for mixture density ####
+
 
