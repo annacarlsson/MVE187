@@ -142,7 +142,6 @@ ggplot() +
     axis.text = element_text(size = 10),
     legend.position = c(0.89, 0.85),
     legend.background = element_rect(fill=alpha('white', 0.8))) + 
-  #scale_colour_manual(values = palette[c(1,2,3,4)], labels = c('With correlated','Without correlated', '', ''), guide = 'legend',name='Variables')
   scale_colour_manual("", 
                       breaks = c("Posterior", "Likelihood", "Prior", "Predictive prior"),
                       values = c("Posterior"=palette[3], "Likelihood"=palette[1], 
