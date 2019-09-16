@@ -178,4 +178,46 @@ ggplot() +
 
 #### D) Posterior predictive for mixture density ####
 
+# Function for computing posterior predictive density
+posterior_predictive <- function(xnew, x, means, sigmas, sigma, weights){
+  c <- 1 / (normal_mixture_density(x, means, sqrt(sigmas^2+sigma^2), weights))
+  n <- length(means)
+  temp_sum <- 0
+  for (i in 1:n){
+    temp_mean <- (x/sigma^2 + means[i]/sigmas[i]^2) / (1/sigma^2 + 1/sigmas[i]^2)
+    temp_std <- sqrt(sigma^2 + 1/(1/sigma^2 + 1/sigmas[i]^2))
+    temp_sum = temp_sum + weights[i] * dnorm(x, means[i], sqrt(sigmas[i]^2+sigma^2), log = FALSE) * dnorm(xnew, temp_mean, temp_std, log = FALSE)
+  }
+  return(c*temp_sum)
+}
+
+# Constants and parameters
+xnew <- seq(1.51, 1.53, length=1000)
+x <- 1.52083
+sigma <- 0.001
+sigmas <- c(0.001, 0.001, 0.005)
+means <- c(1.5163, 1.5197, 1.5203)
+weights <- c(0.33, 0.57, 0.10)
+
+# Compute posterior predictive
+posterior_predictive_density <- posterior_predictive(xnew, x, means, sigmas, sigma, weights)
+
+# Plot posterior predictive
+ggplot() +
+  geom_line(
+    aes(x = xnew, y = posterior_predictive_density), colour = palette[3], size = 1, show.legend = FALSE) +
+  labs(title = "Posterior predictive distribution of x_new given x = 1.52083",
+       x = "x_new",
+       y = "Density") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8))) #+
+  #coord_cartesian(xlim = c(1.517, 1.5235))
+
+auc <- area_under_curve(xnew, posterior_predictive_density, method = "trapezoid")
+
+
 
