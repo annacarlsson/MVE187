@@ -1,6 +1,6 @@
 #################################################################
 # ASSIGNMENT 1
-# Updated: 2019-09-12
+# Updated: 2019-09-16
 # Author: Anna Carlsson
 #################################################################
 
@@ -199,13 +199,24 @@ sigmas <- c(0.001, 0.001, 0.005)
 means <- c(1.5163, 1.5197, 1.5203)
 weights <- c(0.33, 0.57, 0.10)
 
-# Compute posterior predictive
+# Compute posterior predictive and the components that are summed together
 posterior_predictive_density <- posterior_predictive(xnew, x, means, sigmas, sigma, weights)
+
+c <- 1 / (normal_mixture_density(x, means, sqrt(sigmas^2+sigma^2), weights))
+post_pred_1 <- c * weights[1] * dnorm(x, means[1], sqrt(sigmas[1]^2+sigma^2), log = FALSE) * dnorm(xnew, (x/sigma^2 + means[1]/sigmas[1]^2) / (1/sigma^2 + 1/sigmas[1]^2), sqrt(sigma^2 + 1/(1/sigma^2 + 1/sigmas[1]^2)), log = FALSE)
+post_pred_2 <- c * weights[2] * dnorm(x, means[2], sqrt(sigmas[2]^2+sigma^2), log = FALSE) * dnorm(xnew, (x/sigma^2 + means[2]/sigmas[2]^2) / (1/sigma^2 + 1/sigmas[2]^2), sqrt(sigma^2 + 1/(1/sigma^2 + 1/sigmas[2]^2)), log = FALSE)
+post_pred_3 <- c * weights[3] * dnorm(x, means[3], sqrt(sigmas[3]^2+sigma^2), log = FALSE) * dnorm(xnew, (x/sigma^2 + means[3]/sigmas[3]^2) / (1/sigma^2 + 1/sigmas[3]^2), sqrt(sigma^2 + 1/(1/sigma^2 + 1/sigmas[3]^2)), log = FALSE)
 
 # Plot posterior predictive
 ggplot() +
   geom_line(
     aes(x = xnew, y = posterior_predictive_density), colour = palette[3], size = 1, show.legend = FALSE) +
+  geom_line(
+    aes(x = xnew, y = post_pred_1), colour = palette[1], size = 1, alpha = 0.25, show.legend = FALSE) + 
+  geom_line(
+    aes(x = xnew, y = post_pred_2), colour = palette[2], size = 1, alpha = 0.25, show.legend = FALSE) + 
+  geom_line(
+    aes(x = xnew, y = post_pred_3), colour = palette[4], size = 1, alpha = 0.25, show.legend = FALSE) + 
   labs(title = "Posterior predictive distribution of x_new given x = 1.52083",
        x = "x_new",
        y = "Density") + 
@@ -215,9 +226,35 @@ ggplot() +
     axis.text = element_text(size = 10),
     legend.position = c(0.89, 0.85),
     legend.background = element_rect(fill=alpha('white', 0.8))) #+
-  #coord_cartesian(xlim = c(1.517, 1.5235))
 
-auc <- area_under_curve(xnew, posterior_predictive_density, method = "trapezoid")
+#### F) Plot of LR as function of x_c ####
+
+# Define parameters
+x_c <- seq(1.51, 1.53, length=1000)
+x_s <- 1.52083
+sigma <- 0.001
+sigmas <- c(0.001, 0.001, 0.005)
+means <- c(1.5163, 1.5197, 1.5203)
+weights <- c(0.33, 0.57, 0.10)
+
+# Compute LR: posterior predictive / prior predictive
+LR_post_pred <- posterior_predictive(x_c, x_s, means, sigmas, sigma, weights)
+LR_prior_pred <- normal_mixture_density(x_c, means, sqrt(sigmas^2+sigma^2), weights)
+LR <- LR_post_pred/LR_prior_pred
+
+# Plot LR
+ggplot() +
+  geom_line(
+    aes(x = x_c, y = LR), colour = palette[3], size = 1, show.legend = FALSE) +
+  labs(title = "LR as a function of x_c given x_s = 1.52083",
+       x = "x_c",
+       y = "Likelihood ratio") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8)))
 
 
 
