@@ -5,7 +5,7 @@
 #################################################################
 
 ##### Set working directory and load packages #####
-setwd("/Users/anna/Dokument/GitHub/MVE187/Assignments/Assignment_1")
+setwd("/Users/anna/Dokument/GitHub/MVE187/Assignments/Assignment_2")
 library(ggplot2)
 library(gplots)
 
@@ -33,10 +33,18 @@ P <- function(v){
   return(P_temp)
 }
 
+# Compute approximate expected value
 N <- 100
 sample <- rgamma(N, shape = 0.8, scale = 6)
-E_approx <- 1/N * sum(P(sample))
+P_sample <- P(sample)
+E_approx <- 1/N * sum(P_sample)
 
+# Compute approximate 95% CI
+s <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
 
+ci_lower <- E_approx - 1.96 * s / sqrt(N)
+ci_upper <- E_approx + 1.96 * s / sqrt(N)
+
+##### C) Numerical integration #####
 
 
