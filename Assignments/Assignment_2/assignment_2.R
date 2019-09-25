@@ -15,3 +15,28 @@ set.seed(23563)
 
 ##### A) Probability of power delivery at any time #####
 prob <- pgamma(24, shape = 0.8, scale = 6, log = FALSE) - pgamma(4, shape = 0.8, scale = 6, log = FALSE)
+
+##### B) Simulate expected value and CI for expected value
+
+# Define P(v)
+P <- function(v){
+  n <- length(v)
+  P_temp <- rep(0, n)
+  for (i in 1:n){
+    if (v[i] >= 4 && v[i] < 15 ){
+      P_temp[i] <- cos(v[i]*pi/11+7*pi/11) + 1
+    }
+    if (v[i] >= 15 && v[i] < 25){
+      P_temp[i] <- 7/4 + v[i]/30 - v[i]^2/900
+    }
+  }
+  return(P_temp)
+}
+
+N <- 100
+sample <- rgamma(N, shape = 0.8, scale = 6)
+E_approx <- 1/N * sum(P(sample))
+
+
+
+
