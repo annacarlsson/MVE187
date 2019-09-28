@@ -1,6 +1,6 @@
 #################################################################
 # ASSIGNMENT 2
-# Updated: 2019-09-24
+# Updated: 2019-09-28
 # Author: Anna Carlsson
 #################################################################
 
@@ -34,7 +34,7 @@ P <- function(v){
 }
 
 # Compute approximate expected value
-N <- 100
+N <- 10000
 sample <- rgamma(N, shape = 0.8, scale = 6)
 P_sample <- P(sample)
 E_approx <- 1/N * sum(P_sample)
@@ -59,4 +59,59 @@ E <- integrate(integrand, 4, 25)
 
 ##### D) Use importance sampling to improve accuracy #####
 
+# Plot each function and consider which proposal density to use
+v <- seq(1,25,length.out = 10000)
+p_v <- P(v)
+pi_v <- dgamma(v, shape = 0.8, scale = 6)
+instr_distr <- dnorm(v, mean = 11, sd = 4.5, log = FALSE)
 
+ggplot() +
+  geom_line(
+    aes(x = v, y = p_v), colour = palette[2], size = 1, show.legend = FALSE) +
+  geom_line(
+    aes(x = v, y = pi_v), colour = palette[3], size = 1, show.legend = FALSE) +
+  labs(title = "Distributions of P(v) and v",
+       x = "v",
+       y = "Density") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8)))
+
+ggplot() +
+  geom_line(
+    aes(x = v, y = p_v*pi_v), colour = palette[1], size = 1, show.legend = FALSE) +
+  geom_line(
+    aes(x = v, y = instr_distr), colour = palette[4], size = 1, show.legend = FALSE) +
+  labs(title = "Scaled product of densities of P(v) and v",
+       x = "v",
+       y = "Density") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8)))
+
+##### E) Use proposal density to reestimate mean #####
+
+# Define importance sampling function
+P_importance <- function(v){
+  p_v <- P(v)
+  pi_v <- dgamma(v, shape = 0.8, scale = 6)
+  g_v <- dnorm(v, mean = 11, sd = 4.5, log = FALSE)
+  return(p_v * pi_v / g_v)
+}
+
+N <- 10000
+importance_sample <- rnorm(N, mean = 11, sd = 4.5)
+P_importance_sample <- P_importance(importance_sample)
+E_importance_approx <- 1/N * sum(P_importance_sample)
+
+# 95% approximate confidence interval
+s_importance <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx)^2))
+
+ci_importance_lower <- E_importance_approx - 1.96 * s_importance / sqrt(N)
+ci_importance_upper <- E_importance_approx + 1.96 * s_importance / sqrt(N)
