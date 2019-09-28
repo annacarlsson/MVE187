@@ -13,10 +13,10 @@ palette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "
 
 set.seed(23563)
 
-##### A) Probability of power delivery at any time #####
+##### 1A) Probability of power delivery at any time #####
 prob <- pgamma(24, shape = 0.8, scale = 6, log = FALSE) - pgamma(4, shape = 0.8, scale = 6, log = FALSE)
 
-##### B) Simulate expected value and CI for expected value
+##### 1B) Simulate expected value and CI for expected value
 
 # Define P(v)
 P <- function(v){
@@ -45,7 +45,7 @@ s <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
 ci_lower <- E_approx - 1.96 * s / sqrt(N)
 ci_upper <- E_approx + 1.96 * s / sqrt(N)
 
-##### C) Numerical integration #####
+##### 1C) Numerical integration #####
 
 # Define integrand
 integrand <- function(v){
@@ -57,7 +57,7 @@ integrand <- function(v){
 # Compute integral numerically
 E <- integrate(integrand, 4, 25)
 
-##### D) Use importance sampling to improve accuracy #####
+##### 1D) Use importance sampling to improve accuracy #####
 
 # Plot each function and consider which proposal density to use
 v <- seq(1,25,length.out = 10000)
@@ -95,7 +95,7 @@ ggplot() +
     legend.position = c(0.89, 0.85),
     legend.background = element_rect(fill=alpha('white', 0.8)))
 
-##### E) Use proposal density to reestimate mean #####
+##### 1E) Use proposal density to reestimate mean #####
 
 # Define importance sampling function
 P_importance <- function(v){
@@ -110,8 +110,13 @@ importance_sample <- rnorm(N, mean = 11, sd = 4.5)
 P_importance_sample <- P_importance(importance_sample)
 E_importance_approx <- 1/N * sum(P_importance_sample)
 
-# 95% approximate confidence interval
+##### 1F) Estimate variance of power production #####
 s_importance <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx)^2))
 
 ci_importance_lower <- E_importance_approx - 1.96 * s_importance / sqrt(N)
 ci_importance_upper <- E_importance_approx + 1.96 * s_importance / sqrt(N)
+
+
+
+
+
