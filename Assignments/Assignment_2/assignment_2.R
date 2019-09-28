@@ -47,4 +47,16 @@ ci_upper <- E_approx + 1.96 * s / sqrt(N)
 
 ##### C) Numerical integration #####
 
+# Define integrand
+integrand <- function(v){
+  p <- P(v)
+  gamma <- dgamma(v, shape = 0.8, scale = 6)
+  return(p*gamma)
+}
+
+# Compute integral numerically
+E <- integrate(integrand, 4, 25)
+
+##### D) Use importance sampling to improve accuracy #####
+
 
