@@ -1,6 +1,6 @@
 #################################################################
 # ASSIGNMENT 2
-# Updated: 2019-09-28
+# Updated: 2019-09-29
 # Author: Anna Carlsson
 #################################################################
 
@@ -115,6 +115,56 @@ s_importance <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx
 
 ci_importance_lower <- E_importance_approx - 1.96 * s_importance / sqrt(N)
 ci_importance_upper <- E_importance_approx + 1.96 * s_importance / sqrt(N)
+
+##### 2A) Maximum likelihood estimate of lambda #####
+Y_i <- c(162, 267, 271, 185, 111, 61, 27, 8, 3, 1)
+i <- seq(from = 0, to = 9, length.out = 10)
+
+# MLE of lambda
+n <- sum(Y_i)
+lambda_est <- 1/n * sum(Y_i*i)
+
+# Compute values from distribution
+est_vals <- n * dpois(i, lambda_est, log = FALSE)
+
+# Plot distribution with estimated values and actual values
+ggplot() +
+  geom_line(
+    aes(x = i, y = est_vals), colour = palette[2], size = 1, show.legend = FALSE) +
+  geom_point(
+    aes(x = i, y = Y_i), colour = palette[3], size = 1, show.legend = FALSE) +
+  geom_point(
+    aes(x = i, y = est_vals), colour = palette[2], size = 1, show.legend = FALSE) +
+  labs(title = "Estimated values and actual values",
+       x = "i",
+       y = "Density") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.89, 0.85),
+    legend.background = element_rect(fill=alpha('white', 0.8)))
+
+##### 2F) Gibb's sampling of posterior of parameters #####
+
+# Define density functions
+p_post <- function(lambda_1, lambda_2, Y_i, Z_i){
+  
+}
+
+# Initialize matrix
+N <- 1000
+result <- matrix(0, N, 3, byrow=TRUE)
+data <- Y_i
+ndata <- length(data)
+
+for (i in 2:n) {
+  # Here each component should be updated!
+  # How to handle z_i? Do we need to sample z_i using Gibbs also?
+}
+
+
+
 
 
 
