@@ -8,6 +8,7 @@
 setwd("/Users/anna/Dokument/GitHub/MVE187/Assignments/Assignment_2")
 library(ggplot2)
 library(gplots)
+library(emdbook)
 
 palette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -34,16 +35,47 @@ P <- function(v){
 }
 
 # Compute approximate expected value
-N <- 10000
+N <- 20000
 sample <- rgamma(N, shape = 0.8, scale = 6)
 P_sample <- P(sample)
 E_approx <- 1/N * sum(P_sample)
 
 # Compute approximate 95% CI
-s <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
+s_squared <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
 
-ci_lower <- E_approx - 1.96 * s / sqrt(N)
-ci_upper <- E_approx + 1.96 * s / sqrt(N)
+ci_lower <- E_approx - 1.96 * sqrt(s) / sqrt(N)
+ci_upper <- E_approx + 1.96 * sqrt(s) / sqrt(N)
+
+# Create plot for approximate E as function of sample size
+sim_function <- function(N){
+  output <- rep(0,length(N))
+  index <- 1
+  for (i in N){
+    print(i)
+    sample_temp <- rgamma(i, shape = 0.8, scale = 6)
+    P_sample_temp <- P(sample_temp)
+    E_approx_temp <- 1/i * sum(P_sample_temp)
+    output[index] <- E_approx_temp
+    index <- index + 1
+  }
+  return(output)
+}
+
+N_seq <- seq(1,20000,100)
+E_seq <- sim_function(N_seq)
+
+ggplot() +
+  geom_line(
+    aes(x = N_seq, y = E_seq), colour = palette[2], size = 1, show.legend = FALSE) + 
+  labs(title = "Simulated mean as function of sample size",
+       x = "Sample size",
+       y = "Simulated mean") + 
+  theme(
+    plot.title = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.text = element_text(size = 10),
+    legend.position = c(0.85, 0.8),
+    legend.background = element_rect(fill=alpha('white', 0.9)))
 
 ##### 1C) Numerical integration #####
 
@@ -67,33 +99,35 @@ instr_distr <- dnorm(v, mean = 11, sd = 4.5, log = FALSE)
 
 ggplot() +
   geom_line(
-    aes(x = v, y = p_v), colour = palette[2], size = 1, show.legend = FALSE) +
+    aes(x = v, y = p_v, colour = "P(v)"), size = 1, show.legend = TRUE) +
   geom_line(
-    aes(x = v, y = pi_v), colour = palette[3], size = 1, show.legend = FALSE) +
-  labs(title = "Distributions of P(v) and v",
+    aes(x = v, y = pi_v,  colour = "pi(v)"), size = 1, show.legend = TRUE) +
+  labs(title = "Distributions of P and v",
        x = "v",
        y = "Density") + 
   theme(
     plot.title = element_text(size = 10),
     axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10),
-    legend.position = c(0.89, 0.85),
-    legend.background = element_rect(fill=alpha('white', 0.8)))
+    axis.text = element_text(size = 10)) + 
+  scale_colour_manual("", 
+                      breaks = c("P(v)", "pi(v)"),
+                      values = c("P(v)"=palette[2], "pi(v)"=palette[3]))
 
 ggplot() +
   geom_line(
-    aes(x = v, y = p_v*pi_v), colour = palette[1], size = 1, show.legend = FALSE) +
+    aes(x = v, y = p_v*pi_v, colour = "P(v) * pi(v)"), size = 1, show.legend = TRUE) +
   geom_line(
-    aes(x = v, y = instr_distr), colour = palette[4], size = 1, show.legend = FALSE) +
-  labs(title = "Scaled product of densities of P(v) and v",
+    aes(x = v, y = instr_distr, colour = "Proposal density"), size = 1, show.legend = TRUE) +
+  labs(title = "Product of densities of P(v) and v and proposal density",
        x = "v",
        y = "Density") + 
   theme(
     plot.title = element_text(size = 10),
     axis.title = element_text(size = 10),
-    axis.text = element_text(size = 10),
-    legend.position = c(0.89, 0.85),
-    legend.background = element_rect(fill=alpha('white', 0.8)))
+    axis.text = element_text(size = 10)) +
+  scale_colour_manual("", 
+                      breaks = c("P(v) * pi(v)", "Proposal density"),
+                      values = c("P(v) * pi(v)"=palette[2], "Proposal density"=palette[3]))
 
 ##### 1E) Use proposal density to reestimate mean #####
 
@@ -105,7 +139,7 @@ P_importance <- function(v){
   return(p_v * pi_v / g_v)
 }
 
-N <- 10000
+N <- 20000
 importance_sample <- rnorm(N, mean = 11, sd = 4.5)
 P_importance_sample <- P_importance(importance_sample)
 E_importance_approx <- 1/N * sum(P_importance_sample)
