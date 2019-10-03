@@ -1,6 +1,6 @@
 #################################################################
 # ASSIGNMENT 2
-# Updated: 2019-09-29
+# Updated: 2019-10-03
 # Author: Anna Carlsson
 #################################################################
 
@@ -43,8 +43,8 @@ E_approx <- 1/N * sum(P_sample)
 # Compute approximate 95% CI
 s_squared <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
 
-ci_lower <- E_approx - 1.96 * sqrt(s) / sqrt(N)
-ci_upper <- E_approx + 1.96 * sqrt(s) / sqrt(N)
+ci_lower <- E_approx - 1.96 * sqrt(s_squared) / sqrt(N)
+ci_upper <- E_approx + 1.96 * sqrt(s_squared) / sqrt(N)
 
 # Create plot for approximate E as function of sample size
 sim_function <- function(N){
@@ -144,11 +144,14 @@ importance_sample <- rnorm(N, mean = 11, sd = 4.5)
 P_importance_sample <- P_importance(importance_sample)
 E_importance_approx <- 1/N * sum(P_importance_sample)
 
-##### 1F) Estimate variance of power production #####
-s_importance <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx)^2))
+# 95% confidence interval
+s_importance_squared <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx)^2))
 
-ci_importance_lower <- E_importance_approx - 1.96 * s_importance / sqrt(N)
-ci_importance_upper <- E_importance_approx + 1.96 * s_importance / sqrt(N)
+ci_importance_lower <- E_importance_approx - 1.96 * sqrt(s_importance_squared) / sqrt(N)
+ci_importance_upper <- E_importance_approx + 1.96 * sqrt(s_importance_squared) / sqrt(N)
+
+##### 1F) Estimate variance of power production #####
+estimated_variance <- 1 / N  * sum((P_importance_sample - E_importance_approx)^2)
 
 ##### 2A) Maximum likelihood estimate of lambda #####
 Y_i <- c(162, 267, 271, 185, 111, 61, 27, 8, 3, 1)
@@ -181,24 +184,24 @@ ggplot() +
 
 ##### 2F) Gibb's sampling of posterior of parameters #####
 
-# Define density functions
-p_post <- function(lambda_1, lambda_2, Y_i, Z_i){
-  
-}
-
 # Initialize matrix
 N <- 1000
 result <- matrix(0, N, 3, byrow=TRUE)
-data <- Y_i
-ndata <- length(data)
+ndata <- length(Y_i)
+Z_i <- rep(0, ndata)
 
-for (i in 2:n) {
-  # Here each component should be updated!
-  # How to handle z_i? Do we need to sample z_i using Gibbs also?
+for (i in 2:N) {
+  #print(i)
+  result[i,1] <- rbeta(1, (1 + ndata * mean(result[i-1, 3])), 1 + 1 + ndata * mean(Y_i - result[i-1, 3]))
+  result[i,2] <- rgamma(1, (1 + sum(seq(0,9) * result[i,1])), (1 + ndata * mean(result[i,1])))
+  result[i,3] <- rgamma(1, (1 + sum(seq(0,9) * (Y_i - result[i,2]))), (1 + ndata * mean(Y_i - result[i,2])))
 }
 
-
-
+result <- as.data.frame(result)
+names(result) <- c("p", "lambda_1", "lambda_2")
+plot(seq(1,N), result$p)
+plot(seq(1,N), result$lambda_1)
+plot(seq(1,N), result$lambda_2)
 
 
 
