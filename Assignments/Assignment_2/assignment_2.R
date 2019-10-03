@@ -185,7 +185,7 @@ ggplot() +
 ##### 2F) Gibb's sampling of posterior of parameters #####
 
 # Initialize matrix
-N <- 20000
+N <- 100000
 p <- rep(0.5, N)
 lambda_1 <- rep(2, N)
 lambda_2 <- rep(2, N)
