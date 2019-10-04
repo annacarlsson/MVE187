@@ -1,6 +1,6 @@
 #################################################################
 # ASSIGNMENT 2
-# Updated: 2019-10-03
+# Updated: 2019-10-04
 # Author: Anna Carlsson
 #################################################################
 
@@ -41,10 +41,10 @@ P_sample <- P(sample)
 E_approx <- 1/N * sum(P_sample)
 
 # Compute approximate 95% CI
-s_squared <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
+s <- sqrt(1 / (N-1)  * sum((P_sample - E_approx)^2))
 
-ci_lower <- E_approx - 1.96 * sqrt(s_squared) / sqrt(N)
-ci_upper <- E_approx + 1.96 * sqrt(s_squared) / sqrt(N)
+ci_lower <- E_approx - 1.96 * s / sqrt(N)
+ci_upper <- E_approx + 1.96 * s / sqrt(N)
 
 # Create plot for approximate E as function of sample size
 sim_function <- function(N){
@@ -145,10 +145,10 @@ P_importance_sample <- P_importance(importance_sample)
 E_importance_approx <- 1/N * sum(P_importance_sample)
 
 # 95% confidence interval
-s_importance_squared <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx)^2))
+s_importance <- sqrt(1 / (N-1)  * sum((P_importance_sample - E_importance_approx)^2))
 
-ci_importance_lower <- E_importance_approx - 1.96 * sqrt(s_importance_squared) / sqrt(N)
-ci_importance_upper <- E_importance_approx + 1.96 * sqrt(s_importance_squared) / sqrt(N)
+ci_importance_lower <- E_importance_approx - 1.96 * s_importance / sqrt(N)
+ci_importance_upper <- E_importance_approx + 1.96 * s_importance / sqrt(N)
 
 ##### 1F) Estimate variance of power production #####
 estimated_variance <- 1 / N  * sum((P_importance_sample - E_importance_approx)^2)
@@ -158,8 +158,7 @@ Y_i <- c(162, 267, 271, 185, 111, 61, 27, 8, 3, 1)
 I <- c(0:9)
 
 # MLE of lambda
-n <- sum(Y_i)
-lambda_est <- 1/n * sum(Y_i*I)
+lambda_est <- sum(Y_i*I) / sum(Y_i)
 
 # Compute values from distribution
 est_vals <- n * dpois(I, lambda_est, log = FALSE)
@@ -184,7 +183,7 @@ ggplot() +
 
 ##### 2F) Gibb's sampling of posterior of parameters #####
 
-# Initialize matrix
+# Initialize parameters
 N <- 100000
 p <- rep(0.5, N)
 lambda_1 <- rep(2, N)
@@ -267,11 +266,11 @@ ggplot() +
 # Plot the improved density with MLE
 ggplot() +
   geom_line(
-    aes(x = I, y = est_vals), colour = palette[2], size = 1, show.legend = FALSE) +
+    aes(x = I, y = est_vals, colour = "Poisson MLE"), size = 1, show.legend = TRUE) +
   geom_line(
-    aes(x = I, y = n * extended_model), colour = palette[4], size = 1, show.legend = FALSE) +
-  geom_point(
-    aes(x = I, y = Y_i), colour = palette[3], size = 1, show.legend = FALSE) +
+    aes(x = I, y = n * extended_model, colour = "Extended model"), size = 1, show.legend = TRUE) +
+  geom_line(
+    aes(x = I, y = Y_i, colour = "Actual counts"), size = 1, show.legend = TRUE) +
   labs(title = "MLE density and mixture density",
        x = "i",
        y = "Density") + 
@@ -280,5 +279,8 @@ ggplot() +
     axis.title = element_text(size = 10),
     axis.text = element_text(size = 10),
     legend.position = c(0.89, 0.85),
-    legend.background = element_rect(fill=alpha('white', 0.8)))
+    legend.background = element_rect(fill=alpha('white', 0.8))) +
+  scale_colour_manual("", 
+                      breaks = c("Actual counts", "Poisson MLE", "Extended model"),
+                      values = c("Actual counts"=palette[3], "Poisson MLE"=palette[2], "Extended model" =palette[4]))
 
