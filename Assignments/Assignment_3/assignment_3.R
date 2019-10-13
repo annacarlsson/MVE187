@@ -87,5 +87,3 @@ ggplot() +
                       breaks = c("Actual counts", "Poisson MLE", "Extended model"),
                       values = c("Actual counts"=palette[3], "Poisson MLE"=palette[2], "Extended model" =palette[4]))
 
-
-
