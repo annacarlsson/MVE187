@@ -161,6 +161,7 @@ I <- c(0:9)
 lambda_est <- sum(Y_i*I) / sum(Y_i)
 
 # Compute values from distribution
+n <- sum(Y_i)
 est_vals <- n * dpois(I, lambda_est, log = FALSE)
 
 # Plot distribution with estimated values and actual values
