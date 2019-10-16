@@ -43,3 +43,21 @@ ci_c <- matrix(ci_c, nrow = n, byrow = FALSE)
 nbr_contains_c <- ci_c[ci_c[,1] < 0.05 & ci_c[,2] > 0.05,]
 prop_c <- dim(nbr_contains_c)[1]/n
 
+### Problem RC1.19
+A <- matrix(runif(4),ncol=2)
+A <- A/apply(A, 1, sum)
+
+# Check the exponential A^2 
+A_2 <- apply(A%*%A, 1, sum)
+
+# Check what happens if we keep multiplying
+A_3 <- A
+for (i in 1:100){
+  A_3 <- A_3%*%A_3
+}
+print(apply(A_3, 1, sum))
+
+
+
+
+
